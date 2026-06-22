@@ -13,6 +13,7 @@ use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\TokenController;
 use App\Http\Controllers\ResultsController;
+use App\Http\Controllers\QrCodeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,6 +103,9 @@ Route::group(['middleware' => ['shibinjection']], function () {
     
     // Results Aggregation Routes (for Google Slides integration)
     Route::get('/api/chime/{chime}/session/{session}/results', [ResultsController::class, 'show']);
+    
+    // QR Code Generation Route (for Google Slides integration)
+    Route::get('/api/chime/{chime}/qrcode', [QrCodeController::class, 'show']);
     
     // API Token Management Routes (for Google Slides integration)
     Route::get('/api/tokens', [TokenController::class, 'index']);

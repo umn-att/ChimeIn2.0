@@ -11,6 +11,7 @@ use App\Http\Controllers\PresentController;
 use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\QuestionController;
+use App\Http\Controllers\TokenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,6 +98,12 @@ Route::group(['middleware' => ['shibinjection']], function () {
 
     Route::post('/api/chime/{chime_id}/folder/{folder_id}/question/{question_id}', 'PresentController@startSession');
     Route::put('/api/chime/{chime_id}/folder/{folder_id}/question/{question_id}/stopSession', 'PresentController@stopSession');
+    
+    // API Token Management Routes (for Google Slides integration)
+    Route::get('/api/tokens', [TokenController::class, 'index']);
+    Route::post('/api/tokens', [TokenController::class, 'store']);
+    Route::delete('/api/tokens/{tokenId}', [TokenController::class, 'destroy']);
+    Route::post('/api/tokens/revoke-all', [TokenController::class, 'revokeAll']);
     
     Route::get('/impersonate/stop', [ImpersonateController::class, 'stop'])->name('impersonate.stop');
 

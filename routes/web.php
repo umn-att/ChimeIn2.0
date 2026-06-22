@@ -12,6 +12,7 @@ use App\Http\Controllers\UsersController;
 use App\Http\Controllers\ImpersonateController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\TokenController;
+use App\Http\Controllers\ResultsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -98,6 +99,9 @@ Route::group(['middleware' => ['shibinjection']], function () {
 
     Route::post('/api/chime/{chime_id}/folder/{folder_id}/question/{question_id}', 'PresentController@startSession');
     Route::put('/api/chime/{chime_id}/folder/{folder_id}/question/{question_id}/stopSession', 'PresentController@stopSession');
+    
+    // Results Aggregation Routes (for Google Slides integration)
+    Route::get('/api/chime/{chime}/session/{session}/results', [ResultsController::class, 'show']);
     
     // API Token Management Routes (for Google Slides integration)
     Route::get('/api/tokens', [TokenController::class, 'index']);

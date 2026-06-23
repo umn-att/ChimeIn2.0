@@ -1,8 +1,65 @@
 <script>
+  var cachedChimes = [];
+
   function setMessage(text, isError) {
     var message = document.getElementById('message');
     message.textContent = text || '';
     message.className = isError ? 'error' : '';
+  }
+
+  function setSelectOptions(selectId, options, placeholder) {
+    var select = document.getElementById(selectId);
+    select.innerHTML = '';
+
+    var emptyOption = document.createElement('option');
+    emptyOption.value = '';
+    emptyOption.textContent = placeholder;
+    select.appendChild(emptyOption);
+
+    options.forEach(function (option) {
+      var el = document.createElement('option');
+      el.value = option.value;
+      el.textContent = option.label;
+      select.appendChild(el);
+    });
+  }
+
+  async function loadChimes() {
+    var chimes = await callServer('getSidebarChimeOptions');
+    cachedChimes = Array.isArray(chimes) ? chimes : [];
+
+    var selectOptions = cachedChimes.map(function (chime) {
+      var suffix = chime.accessCode ? ' (code ' + chime.accessCode + ')' : '';
+      return {
+        value: chime.id,
+        label: chime.name + suffix
+      };
+    });
+
+    setSelectOptions('qrChimeId', selectOptions, 'Select a Chime');
+    setSelectOptions('resultsChimeId', selectOptions, 'Select a Chime');
+
+    return cachedChimes.length;
+  }
+
+  async function loadSessionsForSelectedChime() {
+    var chimeId = document.getElementById('resultsChimeId').value;
+    if (!chimeId) {
+      setSelectOptions('sessionId', [], 'Select a Chime first');
+      return 0;
+    }
+
+    var sessions = await callServer('getSidebarSessionOptions', [chimeId]);
+    var options = (sessions || []).map(function (session) {
+      var prefix = session.folderName ? '[' + session.folderName + '] ' : '';
+      return {
+        value: session.id,
+        label: prefix + session.questionText
+      };
+    });
+
+    setSelectOptions('sessionId', options, options.length ? 'Select an open session' : 'No open sessions');
+    return options.length;
   }
 
   function callServer(fnName, args) {
@@ -30,6 +87,15 @@
       document.getElementById('authStatus').textContent = status.hasToken
         ? 'Token is saved.'
         : 'No token saved yet.';
+
+      if (status.hasToken) {
+        var chimeCount = await loadChimes();
+        setMessage('Loaded ' + chimeCount + ' chimes.');
+      } else {
+        setSelectOptions('qrChimeId', [], 'Save and validate token first');
+        setSelectOptions('resultsChimeId', [], 'Save and validate token first');
+        setSelectOptions('sessionId', [], 'Save and validate token first');
+      }
     } catch (e) {
       setMessage(e, true);
     }
@@ -38,10 +104,13 @@
   document.getElementById('saveTokenBtn').addEventListener('click', async function () {
     setMessage('Saving token...');
     try {
-      await callServer('setBaseUrl', [document.getElementById('baseUrl').value]);
-      await callServer('saveAuthToken', [document.getElementById('apiToken').value]);
-      setMessage('Token saved.');
-      document.getElementById('authStatus').textContent = 'Token is saved.';
+      var result = await callServer('saveConnectionSettings', [
+        document.getElementById('baseUrl').value,
+        document.getElementById('apiToken').value
+      ]);
+      document.getElementById('authStatus').textContent = 'Token is saved and valid.';
+      var chimeCount = await loadChimes();
+      setMessage('Connection saved. Chimes available: ' + chimeCount + '.');
     } catch (e) {
       setMessage(e, true);
     }
@@ -51,7 +120,36 @@
     setMessage('Validating token...');
     try {
       var result = await callServer('validateAuthToken');
-      setMessage('Token valid. Chimes available: ' + result.chimeCount);
+      var chimeCount = await loadChimes();
+      setMessage('Token valid. Chimes available: ' + (result.chimeCount || chimeCount));
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('refreshChimesBtn').addEventListener('click', async function () {
+    setMessage('Refreshing chimes...');
+    try {
+      var count = await loadChimes();
+      setMessage('Chime list updated (' + count + ').');
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('resultsChimeId').addEventListener('change', async function () {
+    try {
+      await loadSessionsForSelectedChime();
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('refreshSessionsBtn').addEventListener('click', async function () {
+    setMessage('Refreshing sessions...');
+    try {
+      var count = await loadSessionsForSelectedChime();
+      setMessage('Open sessions updated (' + count + ').');
     } catch (e) {
       setMessage(e, true);
     }
@@ -60,7 +158,11 @@
   document.getElementById('insertQrBtn').addEventListener('click', async function () {
     setMessage('Inserting QR code...');
     try {
-      await callServer('insertQrCodeForChime', [document.getElementById('qrChimeId').value, { size: 300, format: 'png' }]);
+      var chimeId = document.getElementById('qrChimeId').value;
+      if (!chimeId) {
+        throw new Error('Select a Chime first.');
+      }
+      await callServer('insertQrCodeForChime', [chimeId, { size: 300, format: 'png' }]);
       setMessage('QR code inserted.');
     } catch (e) {
       setMessage(e, true);
@@ -70,9 +172,14 @@
   document.getElementById('insertResultsBtn').addEventListener('click', async function () {
     setMessage('Inserting results...');
     try {
+      var chimeId = document.getElementById('resultsChimeId').value;
+      var sessionId = document.getElementById('sessionId').value;
+      if (!chimeId || !sessionId) {
+        throw new Error('Select both a Chime and an open Session.');
+      }
       await callServer('insertSessionResults', [
-        document.getElementById('resultsChimeId').value,
-        document.getElementById('sessionId').value
+        chimeId,
+        sessionId
       ]);
       setMessage('Results inserted.');
     } catch (e) {

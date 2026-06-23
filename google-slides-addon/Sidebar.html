@@ -26,20 +26,22 @@
 
       <section class="card">
         <h2>Insert QR Code</h2>
-        <label for="qrChimeId">Chime ID</label>
-        <input id="qrChimeId" type="text" placeholder="e.g. 123" />
+        <label for="qrChimeId">Chime</label>
+        <select id="qrChimeId"></select>
         <div class="row">
+          <button id="refreshChimesBtn" class="secondary">Refresh Chimes</button>
           <button id="insertQrBtn">Insert QR</button>
         </div>
       </section>
 
       <section class="card">
         <h2>Insert Results</h2>
-        <label for="resultsChimeId">Chime ID</label>
-        <input id="resultsChimeId" type="text" placeholder="e.g. 123" />
-        <label for="sessionId">Session ID</label>
-        <input id="sessionId" type="text" placeholder="e.g. 456" />
+        <label for="resultsChimeId">Chime</label>
+        <select id="resultsChimeId"></select>
+        <label for="sessionId">Open Session</label>
+        <select id="sessionId"></select>
         <div class="row">
+          <button id="refreshSessionsBtn" class="secondary">Refresh Sessions</button>
           <button id="insertResultsBtn">Insert Results</button>
         </div>
       </section>

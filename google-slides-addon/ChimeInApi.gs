@@ -27,7 +27,16 @@ function apiRequest(path, options) {
   var bodyText = httpResponse.getContentText();
 
   if (status >= 400) {
-    throw new Error('ChimeIn API request failed (' + status + '): ' + bodyText);
+    var message = bodyText;
+    try {
+      var parsedError = JSON.parse(bodyText);
+      if (parsedError && parsedError.message) {
+        message = parsedError.message;
+      }
+    } catch (e) {
+      // Keep raw body text if parse fails.
+    }
+    throw new Error('ChimeIn API request failed (' + status + '): ' + message);
   }
 
   if (!bodyText) {
@@ -39,6 +48,12 @@ function apiRequest(path, options) {
 
 function fetchChimes() {
   return apiRequest('/api/chime', { method: 'get' });
+}
+
+function fetchOpenSessions(chimeId) {
+  return apiRequest('/api/chime/' + encodeURIComponent(chimeId) + '/openQuestions', {
+    method: 'get'
+  });
 }
 
 function fetchChime(chimeId) {
@@ -81,4 +96,43 @@ function fetchQrCodeBlob(chimeId, size, format) {
   }
 
   return response.getBlob();
+}
+
+function getSidebarChimeOptions() {
+  var chimes = fetchChimes();
+  if (!Array.isArray(chimes)) {
+    return [];
+  }
+
+  return chimes
+    .map(function (chime) {
+      return {
+        id: String(chime.id),
+        name: chime.name || ('Chime ' + chime.id),
+        accessCode: chime.access_code || ''
+      };
+    })
+    .sort(function (a, b) {
+      return a.name.localeCompare(b.name);
+    });
+}
+
+function getSidebarSessionOptions(chimeId) {
+  if (!chimeId) {
+    return [];
+  }
+
+  var payload = fetchOpenSessions(chimeId);
+  var sessions = payload && Array.isArray(payload.sessions) ? payload.sessions : [];
+
+  return sessions.map(function (session) {
+    var question = session.question || {};
+    var folder = question.folder || {};
+    return {
+      id: String(session.id),
+      questionText: question.text || ('Question ' + (question.id || '')),
+      folderName: folder.name || '',
+      updatedAt: session.updated_at || ''
+    };
+  });
 }

@@ -41,9 +41,21 @@ function getAuthStatus() {
 }
 
 function validateAuthToken() {
-  var response = apiRequest('/api/chime', { method: 'get' });
+  var response = fetchChimes();
   return {
     valid: true,
     chimeCount: Array.isArray(response) ? response.length : 0
+  };
+}
+
+function saveConnectionSettings(baseUrl, token) {
+  var normalizedBaseUrl = setBaseUrl(baseUrl);
+  saveAuthToken(token);
+  var validation = validateAuthToken();
+
+  return {
+    saved: true,
+    baseUrl: normalizedBaseUrl,
+    validation: validation
   };
 }

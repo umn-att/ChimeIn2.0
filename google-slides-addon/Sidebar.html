@@ -28,6 +28,38 @@
         <h2>Insert QR Code</h2>
         <label for="qrChimeId">Chime</label>
         <select id="qrChimeId"></select>
+
+        <label for="qrSize">QR Size</label>
+        <select id="qrSize">
+          <option value="200">Small (200)</option>
+          <option value="300" selected>Medium (300)</option>
+          <option value="400">Large (400)</option>
+          <option value="500">XL (500)</option>
+        </select>
+
+        <label for="qrFormat">Format</label>
+        <select id="qrFormat">
+          <option value="png" selected>PNG</option>
+          <option value="svg">SVG</option>
+        </select>
+
+        <label for="qrLayout">Layout</label>
+        <select id="qrLayout">
+          <option value="left" selected>Left</option>
+          <option value="center">Center</option>
+          <option value="right">Right</option>
+        </select>
+
+        <label class="checkbox-row" for="qrIncludeJoinText">
+          <input id="qrIncludeJoinText" type="checkbox" checked />
+          Include join instructions below QR
+        </label>
+
+        <label class="checkbox-row" for="qrAllowFallback">
+          <input id="qrAllowFallback" type="checkbox" checked />
+          Use fallback QR provider if API image fails
+        </label>
+
         <div class="row">
           <button id="refreshChimesBtn" class="secondary">Refresh Chimes</button>
           <button id="insertQrBtn">Insert QR</button>

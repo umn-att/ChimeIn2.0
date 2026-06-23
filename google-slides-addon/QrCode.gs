@@ -19,7 +19,7 @@ function insertQrCodeForChime(chimeId, options) {
     var chime = fetchChime(chimeId);
     var joinCode = String(chime.access_code || '');
     var hyphenCode = joinCode.replace(/(\d{3})(\d{3})/, '$1-$2');
-    var joinLine = 'Scan QR or go to chimein.umn.edu and enter ' + hyphenCode;
+    var joinLine = 'Scan QR or go to chimein.cla.umn.edu and enter ' + hyphenCode;
 
     var shape = page.insertShape(SlidesApp.ShapeType.TEXT_BOX, 40, 330, 460, 40);
     shape.getText().setText(joinLine);

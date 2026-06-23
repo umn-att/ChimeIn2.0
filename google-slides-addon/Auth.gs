@@ -1,7 +1,7 @@
 var USER_PROPS = PropertiesService.getUserProperties();
 
 function getBaseUrl() {
-  return USER_PROPS.getProperty('CHIMEIN_BASE_URL') || 'https://chimein.umn.edu';
+  return USER_PROPS.getProperty('CHIMEIN_BASE_URL') || 'https://chimein.cla.umn.edu';
 }
 
 function setBaseUrl(baseUrl) {

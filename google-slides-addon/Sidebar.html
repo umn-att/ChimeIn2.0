@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('SidebarStyles'); ?>
+  </head>
+  <body>
+    <div class="container">
+      <h1>ChimeIn for Slides</h1>
+      <p class="subtle">Signed in as: <span id="userEmail"></span></p>
+
+      <section class="card">
+        <h2>Connection</h2>
+        <label for="baseUrl">ChimeIn Base URL</label>
+        <input id="baseUrl" type="url" placeholder="https://chimein.umn.edu" />
+
+        <label for="apiToken">API Token</label>
+        <textarea id="apiToken" rows="3" placeholder="Paste personal API token"></textarea>
+
+        <div class="row">
+          <button id="saveTokenBtn">Save Token</button>
+          <button id="validateTokenBtn" class="secondary">Validate</button>
+        </div>
+        <p id="authStatus" class="subtle"></p>
+      </section>
+
+      <section class="card">
+        <h2>Insert QR Code</h2>
+        <label for="qrChimeId">Chime ID</label>
+        <input id="qrChimeId" type="text" placeholder="e.g. 123" />
+        <div class="row">
+          <button id="insertQrBtn">Insert QR</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Insert Results</h2>
+        <label for="resultsChimeId">Chime ID</label>
+        <input id="resultsChimeId" type="text" placeholder="e.g. 123" />
+        <label for="sessionId">Session ID</label>
+        <input id="sessionId" type="text" placeholder="e.g. 456" />
+        <div class="row">
+          <button id="insertResultsBtn">Insert Results</button>
+        </div>
+      </section>
+
+      <p id="message" role="status" aria-live="polite"></p>
+    </div>
+
+    <script>
+      window.__USER_EMAIL__ = <?= JSON.stringify(userEmail) ?>;
+      window.__BASE_URL__ = <?= JSON.stringify(baseUrl) ?>;
+    </script>
+    <?!= include('SidebarScript'); ?>
+  </body>
+</html>

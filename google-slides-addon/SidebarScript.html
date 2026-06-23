@@ -1,0 +1,84 @@
+<script>
+  function setMessage(text, isError) {
+    var message = document.getElementById('message');
+    message.textContent = text || '';
+    message.className = isError ? 'error' : '';
+  }
+
+  function callServer(fnName, args) {
+    return new Promise(function (resolve, reject) {
+      var runner = google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(function (err) {
+          reject(err && err.message ? err.message : String(err));
+        });
+
+      if (!args || !args.length) {
+        runner[fnName]();
+      } else {
+        runner[fnName].apply(runner, args);
+      }
+    });
+  }
+
+  async function init() {
+    document.getElementById('userEmail').textContent = window.__USER_EMAIL__ || 'unknown';
+    document.getElementById('baseUrl').value = window.__BASE_URL__ || '';
+
+    try {
+      var status = await callServer('getAuthStatus');
+      document.getElementById('authStatus').textContent = status.hasToken
+        ? 'Token is saved.'
+        : 'No token saved yet.';
+    } catch (e) {
+      setMessage(e, true);
+    }
+  }
+
+  document.getElementById('saveTokenBtn').addEventListener('click', async function () {
+    setMessage('Saving token...');
+    try {
+      await callServer('setBaseUrl', [document.getElementById('baseUrl').value]);
+      await callServer('saveAuthToken', [document.getElementById('apiToken').value]);
+      setMessage('Token saved.');
+      document.getElementById('authStatus').textContent = 'Token is saved.';
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('validateTokenBtn').addEventListener('click', async function () {
+    setMessage('Validating token...');
+    try {
+      var result = await callServer('validateAuthToken');
+      setMessage('Token valid. Chimes available: ' + result.chimeCount);
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('insertQrBtn').addEventListener('click', async function () {
+    setMessage('Inserting QR code...');
+    try {
+      await callServer('insertQrCodeForChime', [document.getElementById('qrChimeId').value, { size: 300, format: 'png' }]);
+      setMessage('QR code inserted.');
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  document.getElementById('insertResultsBtn').addEventListener('click', async function () {
+    setMessage('Inserting results...');
+    try {
+      await callServer('insertSessionResults', [
+        document.getElementById('resultsChimeId').value,
+        document.getElementById('sessionId').value
+      ]);
+      setMessage('Results inserted.');
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
+  init();
+</script>

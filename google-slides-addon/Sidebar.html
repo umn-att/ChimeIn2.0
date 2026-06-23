@@ -72,10 +72,42 @@
         <select id="resultsChimeId"></select>
         <label for="sessionId">Open Session</label>
         <select id="sessionId"></select>
+
+        <label for="resultsDisplayMode">Display Mode</label>
+        <select id="resultsDisplayMode">
+          <option value="table" selected>Table</option>
+          <option value="text">Text Summary</option>
+          <option value="both">Both</option>
+        </select>
+
+        <label for="resultsLayout">Layout</label>
+        <select id="resultsLayout">
+          <option value="right" selected>Right Panel</option>
+          <option value="full">Full Width</option>
+        </select>
+
+        <label class="checkbox-row" for="liveRefreshEnabled">
+          <input id="liveRefreshEnabled" type="checkbox" />
+          Enable live refresh while sidebar is open
+        </label>
+
+        <label for="liveRefreshSeconds">Live Refresh Interval (seconds)</label>
+        <select id="liveRefreshSeconds">
+          <option value="5" selected>5 seconds</option>
+          <option value="10">10 seconds</option>
+          <option value="15">15 seconds</option>
+          <option value="30">30 seconds</option>
+        </select>
+
         <div class="row">
           <button id="refreshSessionsBtn" class="secondary">Refresh Sessions</button>
           <button id="insertResultsBtn">Insert Results</button>
         </div>
+        <div class="row">
+          <button id="startLiveBtn" class="secondary">Start Live</button>
+          <button id="stopLiveBtn" class="secondary">Stop Live</button>
+        </div>
+        <p id="liveStatus" class="subtle">Live refresh is off.</p>
       </section>
 
       <p id="message" role="status" aria-live="polite"></p>

@@ -6,6 +6,7 @@ import ParticipantPage from "./views/ParticipantPage/ParticipantPage.vue";
 import PresentPage from "./views/PresentPage/PresentPage.vue";
 import NotFoundPage from "./views/NotFoundPage/NotFoundPage.vue";
 import FolderParticipationPage from "./views/FolderParticipationPage/FolderParticipationPage.vue";
+import TokenManagementPage from "./views/TokenManagementPage/TokenManagementPage.vue";
 
 const toInt = (value: string | string[], fallback?: number) => {
   if (Array.isArray(value) && !value.length) {
@@ -82,6 +83,11 @@ const routes: RouteRecordRaw[] = [
   //   name: "test.editor",
   //   component: () => import("./views/TestEditorPage/TestEditorPage.vue"),
   // },
+  {
+    path: "/tokens",
+    name: "tokens",
+    component: TokenManagementPage,
+  },
   { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFoundPage },
 ];
 

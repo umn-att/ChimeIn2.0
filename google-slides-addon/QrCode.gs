@@ -30,21 +30,22 @@ function insertQrCodeForChime(chimeId, options) {
     throw new Error('Select a slide before inserting a QR code.');
   }
 
-  var placement = getQrPlacement(layout);
+  // size is a pixel value for API resolution; divide by 2 to get reasonable points on slide
+  var slideSize = Math.round(size / 2);
+  var placement = getQrPlacement(layout, slideSize, includeJoinText);
   var image = page.insertImage(qrBlob);
-  image.setWidth(size).setHeight(size).setLeft(placement.left).setTop(placement.top);
+  image.setWidth(slideSize).setHeight(slideSize).setLeft(placement.left).setTop(placement.top);
 
   if (includeJoinText) {
     var joinCode = String(chime.access_code || '');
     var hyphenCode = joinCode.replace(/(\d{3})(\d{3})/, '$1-$2');
     var joinHost = getBaseUrl().replace(/^https?:\/\//, '');
     var joinLine = 'Scan QR or go to ' + joinHost + ' and enter ' + hyphenCode;
-    var textTop = placement.top + size + 10;
 
     var shape = page.insertShape(
       SlidesApp.ShapeType.TEXT_BOX,
       placement.textLeft,
-      textTop,
+      placement.textTop,
       placement.textWidth,
       placement.textHeight
     );
@@ -57,39 +58,37 @@ function insertQrCodeForChime(chimeId, options) {
   };
 }
 
-function getQrPlacement(layout) {
+function getQrPlacement(layout, slideSize, includeJoinText) {
+  // Standard 16:9 Google Slides dimensions in points
+  var SLIDE_WIDTH = 720;
+  var SLIDE_HEIGHT = 405;
+  var TEXT_HEIGHT = 36;
+  var GAP = 10;
+  var MARGIN = 40;
+
+  // Vertically center the QR + optional text as a group
+  var totalHeight = includeJoinText ? slideSize + GAP + TEXT_HEIGHT : slideSize;
+  var top = Math.max(MARGIN, Math.round((SLIDE_HEIGHT - totalHeight) / 2));
+  var textTop = top + slideSize + GAP;
+
   switch (layout) {
-    case 'center':
-      return {
-        left: 190,
-        top: 120,
-        width: 240,
-        height: 240,
-        textLeft: 120,
-        textWidth: 380,
-        textHeight: 40
-      };
-    case 'right':
-      return {
-        left: 420,
-        top: 120,
-        width: 220,
-        height: 220,
-        textLeft: 310,
-        textWidth: 340,
-        textHeight: 50
-      };
+    case 'center': {
+      var left = Math.round((SLIDE_WIDTH - slideSize) / 2);
+      var textWidth = Math.max(slideSize + 60, 280);
+      var textLeft = Math.round((SLIDE_WIDTH - textWidth) / 2);
+      return { left: left, top: top, textLeft: textLeft, textTop: textTop, textWidth: textWidth, textHeight: TEXT_HEIGHT };
+    }
+    case 'right': {
+      var left = SLIDE_WIDTH - MARGIN - slideSize;
+      var textWidth = Math.max(slideSize + 40, 260);
+      var textLeft = SLIDE_WIDTH - MARGIN - textWidth;
+      return { left: left, top: top, textLeft: textLeft, textTop: textTop, textWidth: textWidth, textHeight: TEXT_HEIGHT };
+    }
     case 'left':
-    default:
-      return {
-        left: 40,
-        top: 120,
-        width: 220,
-        height: 220,
-        textLeft: 40,
-        textWidth: 460,
-        textHeight: 50
-      };
+    default: {
+      var textWidth = Math.max(slideSize + 40, 260);
+      return { left: MARGIN, top: top, textLeft: MARGIN, textTop: textTop, textWidth: textWidth, textHeight: TEXT_HEIGHT };
+    }
   }
 }
 

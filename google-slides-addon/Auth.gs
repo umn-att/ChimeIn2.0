@@ -1,7 +1,7 @@
 var USER_PROPS = PropertiesService.getUserProperties();
 
 function getBaseUrl() {
-  return USER_PROPS.getProperty('CHIMEIN_BASE_URL') || 'https://chimein.cla.umn.edu';
+  return USER_PROPS.getProperty('CHIMEIN_BASE_URL') || '';
 }
 
 function setBaseUrl(baseUrl) {
@@ -9,7 +9,13 @@ function setBaseUrl(baseUrl) {
     throw new Error('Base URL is required.');
   }
 
-  var normalized = String(baseUrl).trim().replace(/\/+$/, '');
+  normalized = String(baseUrl)
+    .trim()
+    .replace(/^['"]+|['"]+$/g, '')  // strip wrapping quotes
+    .replace(/\/+$/, '');           // strip trailing slashes
+
+  if (!/^https?:\/\/.+/.test(normalized)) throw new Error('Base URL must start with http:// or https://');
+  
   USER_PROPS.setProperty('CHIMEIN_BASE_URL', normalized);
   return normalized;
 }
@@ -58,4 +64,15 @@ function saveConnectionSettings(baseUrl, token) {
     baseUrl: normalizedBaseUrl,
     validation: validation
   };
+}
+
+function clearConnectionSettings() {
+  USER_PROPS.deleteProperty('CHIMEIN_BASE_URL');
+  USER_PROPS.deleteProperty('CHIMEIN_API_TOKEN');
+  return { cleared: true };
+}
+
+function clearAllUserSettings() {
+  USER_PROPS.deleteAllProperties();
+  return { cleared: true };
 }

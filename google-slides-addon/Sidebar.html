@@ -37,12 +37,6 @@
           <option value="500">XL (500)</option>
         </select>
 
-        <label for="qrFormat">Format</label>
-        <select id="qrFormat">
-          <option value="png" selected>PNG</option>
-          <option value="svg">SVG</option>
-        </select>
-
         <label for="qrLayout">Layout</label>
         <select id="qrLayout">
           <option value="left" selected>Left</option>
@@ -114,8 +108,8 @@
     </div>
 
     <script>
-      window.__USER_EMAIL__ = <?= JSON.stringify(userEmail) ?>;
-      window.__BASE_URL__ = <?= JSON.stringify(baseUrl) ?>;
+      window.__USER_EMAIL__ = <?!= JSON.stringify(userEmail) ?>;
+      window.__BASE_URL__ = <?!= JSON.stringify(baseUrl) ?>;
     </script>
     <?!= include('SidebarScript'); ?>
   </body>

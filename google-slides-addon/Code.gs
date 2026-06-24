@@ -3,6 +3,7 @@ function onOpen() {
     .createMenu('ChimeIn')
     .addItem('Open ChimeIn Sidebar', 'showSidebar')
     .addItem('Clear Saved Token', 'clearAuthToken')
+    .addItem('Clear Saved Connection', 'clearConnectionSettings')
     .addToUi();
 }
 

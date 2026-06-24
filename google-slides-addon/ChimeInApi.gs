@@ -6,14 +6,19 @@ function apiRequest(path, options) {
 
   var config = options || {};
   var method = (config.method || 'get').toUpperCase();
-  var url = getBaseUrl() + path;
+  var baseUrl = getBaseUrl();
+  var url = baseUrl + path;
+
+  // Debug logging
+  Logger.log('DEBUG apiRequest: baseUrl=' + baseUrl + ', path=' + path + ', url=' + url);
 
   var fetchOptions = {
     method: method,
     muteHttpExceptions: true,
     headers: {
       Authorization: 'Bearer ' + token,
-      Accept: 'application/json'
+      Accept: 'application/json',
+      'User-Agent': 'Google-Apps-Script'
     }
   };
 

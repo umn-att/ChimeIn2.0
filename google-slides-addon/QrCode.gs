@@ -32,18 +32,19 @@ function insertQrCodeForChime(chimeId, options) {
 
   var placement = getQrPlacement(layout);
   var image = page.insertImage(qrBlob);
-  image.setWidth(placement.width).setHeight(placement.height).setLeft(placement.left).setTop(placement.top);
+  image.setWidth(size).setHeight(size).setLeft(placement.left).setTop(placement.top);
 
   if (includeJoinText) {
     var joinCode = String(chime.access_code || '');
     var hyphenCode = joinCode.replace(/(\d{3})(\d{3})/, '$1-$2');
     var joinHost = getBaseUrl().replace(/^https?:\/\//, '');
     var joinLine = 'Scan QR or go to ' + joinHost + ' and enter ' + hyphenCode;
+    var textTop = placement.top + size + 10;
 
     var shape = page.insertShape(
       SlidesApp.ShapeType.TEXT_BOX,
       placement.textLeft,
-      placement.textTop,
+      textTop,
       placement.textWidth,
       placement.textHeight
     );
@@ -65,7 +66,6 @@ function getQrPlacement(layout) {
         width: 240,
         height: 240,
         textLeft: 120,
-        textTop: 370,
         textWidth: 380,
         textHeight: 40
       };
@@ -76,7 +76,6 @@ function getQrPlacement(layout) {
         width: 220,
         height: 220,
         textLeft: 310,
-        textTop: 350,
         textWidth: 340,
         textHeight: 50
       };
@@ -88,7 +87,6 @@ function getQrPlacement(layout) {
         width: 220,
         height: 220,
         textLeft: 40,
-        textTop: 350,
         textWidth: 460,
         textHeight: 50
       };

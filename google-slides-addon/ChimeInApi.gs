@@ -135,7 +135,7 @@ function getSidebarSessionOptions(chimeId) {
     var folder = question.folder || {};
     return {
       id: String(session.id),
-      questionText: question.text || ('Question ' + (question.id || '')),
+      questionText: question.text_preview || question.text || ('Question ' + (question.id || '')),
       folderName: folder.name || '',
       updatedAt: session.updated_at || ''
     };

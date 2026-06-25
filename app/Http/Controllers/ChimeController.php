@@ -419,11 +419,41 @@ class ChimeController extends Controller
         });
 
 
+        // Attach a clean text preview to each question for clients like the Slides add-on
+        $transformedSessions = array_map(function ($session) {
+            $data = $session->toArray();
+            if (isset($data['question']['text'])) {
+                $data['question']['text_preview'] = $this->extractQuestionPreview($data['question']['text']);
+            }
+            return $data;
+        }, $sessions);
+
         return response()->json([
             'chime' => $chime,
-            'sessions' => $sessions
+            'sessions' => $transformedSessions
         ]);
 
+    }
+
+    /**
+     * Extract the first paragraph of an HTML question, strip tags, and truncate.
+     */
+    private function extractQuestionPreview(string $html): string
+    {
+        // Extract content of the first <p> tag
+        if (preg_match('/<p[^>]*>(.*?)<\/p>/si', $html, $matches)) {
+            $text = strip_tags($matches[1]);
+        } else {
+            $text = strip_tags($html);
+        }
+
+        $text = trim(preg_replace('/\s+/', ' ', $text));
+
+        if (mb_strlen($text) > 80) {
+            $text = mb_substr($text, 0, 77) . '...';
+        }
+
+        return $text ?: '(Untitled question)';
     }
 
     private function getValuesForFolder($chime, $folder, $user, $correctOnly) {

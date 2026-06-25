@@ -1,3 +1,32 @@
+/**
+ * Open a live-refreshing modeless dialog showing poll results.
+ * Called from the sidebar via google.script.run.
+ */
+function showLiveResultsDialog(chimeId, sessionId) {
+  if (!chimeId || !sessionId) {
+    throw new Error('Chime ID and Session ID are required.');
+  }
+
+  var template = HtmlService.createTemplateFromFile('ResultsDialog');
+  template.chimeId = String(chimeId);
+  template.sessionId = String(sessionId);
+
+  var html = template.evaluate()
+    .setWidth(480)
+    .setHeight(400)
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+
+  SlidesApp.getUi().showModelessDialog(html, 'Live Results');
+}
+
+/**
+ * Fetch results for the dialog's polling loop.
+ * Returns the same shape as fetchSessionResults().
+ */
+function fetchResultsForDialog(chimeId, sessionId) {
+  return fetchSessionResults(chimeId, sessionId);
+}
+
 function insertSessionResults(chimeId, sessionId, options) {
   if (!chimeId || !sessionId) {
     throw new Error('Both chime ID and session ID are required.');

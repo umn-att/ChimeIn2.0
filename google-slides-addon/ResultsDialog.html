@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      :root {
+        --maroon: #7a0019;
+        --gold: #ffcc33;
+        --ink: #1f2937;
+        --muted: #6b7280;
+        --line: #e5e7eb;
+        --bg: #f8fafc;
+        --green: #0f766e;
+        --red: #b91c1c;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: #fff;
+        padding: 16px;
+        font-size: 13px;
+      }
+      h2 {
+        font-size: 14px;
+        color: var(--maroon);
+        margin-bottom: 4px;
+        line-height: 1.4;
+      }
+      .meta {
+        font-size: 11px;
+        color: var(--muted);
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .meta-right { display: flex; gap: 8px; align-items: center; }
+      select {
+        font-size: 11px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 3px 6px;
+        background: #fff;
+        color: var(--ink);
+      }
+      button {
+        border: none;
+        border-radius: 6px;
+        padding: 4px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        background: var(--maroon);
+        color: #fff;
+      }
+      button.secondary { background: #334155; }
+
+      /* Bar chart */
+      .results-list { list-style: none; width: 100%; }
+      .results-list li { margin-bottom: 10px; }
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      .bar-track {
+        background: var(--line);
+        border-radius: 4px;
+        height: 14px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        background: var(--maroon);
+        border-radius: 4px;
+        transition: width 0.4s ease;
+        min-width: 2px;
+      }
+
+      /* Free response list */
+      .response-list {
+        max-height: 260px;
+        overflow-y: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px;
+        background: var(--bg);
+      }
+      .response-item {
+        padding: 5px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .response-item:last-child { border-bottom: none; }
+
+      /* Slider */
+      .stat-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .stat {
+        text-align: center;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px 16px;
+      }
+      .stat-value { font-size: 22px; font-weight: 700; color: var(--maroon); }
+      .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+      .status-bar {
+        font-size: 11px;
+        margin-top: 12px;
+        color: var(--muted);
+        text-align: right;
+      }
+      .status-bar.error { color: var(--red); }
+      .spinner {
+        display: inline-block;
+        width: 10px; height: 10px;
+        border: 2px solid var(--line);
+        border-top-color: var(--maroon);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 4px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .empty { color: var(--muted); font-size: 12px; padding: 8px 0; }
+    </style>
+  </head>
+  <body>
+    <h2 id="questionText">Loading…</h2>
+    <div class="meta">
+      <span id="responseCount"></span>
+      <div class="meta-right">
+        <select id="intervalSelect">
+          <option value="5000">5s</option>
+          <option value="10000" selected>10s</option>
+          <option value="15000">15s</option>
+          <option value="30000">30s</option>
+        </select>
+        <button id="refreshNowBtn" class="secondary">↺ Now</button>
+      </div>
+    </div>
+
+    <div id="resultsContainer"></div>
+
+    <div id="statusBar" class="status-bar"></div>
+
+    <script>
+      var chimeId = <?!= JSON.stringify(chimeId) ?>;
+      var sessionId = <?!= JSON.stringify(sessionId) ?>;
+      var pollTimer = null;
+      var isRefreshing = false;
+
+      function setStatus(msg, isError) {
+        var el = document.getElementById('statusBar');
+        el.className = 'status-bar' + (isError ? ' error' : '');
+        el.innerHTML = isError ? msg : msg;
+      }
+
+      function setLoading() {
+        setStatus('<span class="spinner"></span> Refreshing…', false);
+      }
+
+      function pct(n, total) {
+        return total > 0 ? Math.round((n / total) * 100) : 0;
+      }
+
+      function renderMultipleChoice(data) {
+        var total = data.total_responses || 0;
+        var choices = (data.results && data.results.choices) || [];
+        if (!choices.length) {
+          return '<p class="empty">No responses yet.</p>';
+        }
+        var html = '<ul class="results-list">';
+        choices.forEach(function (c) {
+          var p = pct(c.count, total);
+          html += '<li>' +
+            '<div class="bar-label"><span>' + escapeHtml(stripTags(c.choice || c.text || '')) + '</span><span>' + c.count + ' (' + p + '%)</span></div>' +
+            '<div class="bar-track"><div class="bar-fill" style="width:' + p + '%"></div></div>' +
+            '</li>';
+        });
+        html += '</ul>';
+        return html;
+      }
+
+      function renderFreeResponse(data) {
+        var responses = (data.results && data.results.responses) || [];
+        if (!responses.length) {
+          return '<p class="empty">No responses yet.</p>';
+        }
+        var html = '<div class="response-list">';
+        responses.forEach(function (r) {
+          html += '<div class="response-item">' + escapeHtml(r.text || '') + '</div>';
+        });
+        html += '</div>';
+        return html;
+      }
+
+      function renderSlider(data) {
+        var r = data.results || {};
+        var html = '<div class="stat-row">';
+        if (r.average !== undefined) {
+          html += '<div class="stat"><div class="stat-value">' + Number(r.average).toFixed(1) + '</div><div class="stat-label">Average</div></div>';
+        }
+        if (r.min !== undefined) {
+          html += '<div class="stat"><div class="stat-value">' + r.min + '</div><div class="stat-label">Min</div></div>';
+        }
+        if (r.max !== undefined) {
+          html += '<div class="stat"><div class="stat-value">' + r.max + '</div><div class="stat-label">Max</div></div>';
+        }
+        html += '</div>';
+        if (r.count !== undefined && r.count === 0) {
+          html += '<p class="empty">No responses yet.</p>';
+        }
+        return html;
+      }
+
+      function renderResults(data) {
+        var type = data.question && data.question.type;
+        switch (type) {
+          case 'multiple_choice': return renderMultipleChoice(data);
+          case 'free_response':
+          case 'text_heatmap':   return renderFreeResponse(data);
+          case 'slider':
+          case 'numeric':        return renderSlider(data);
+          default:               return renderFreeResponse(data);
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function refresh() {
+        if (isRefreshing) return;
+        isRefreshing = true;
+        setLoading();
+        google.script.run
+          .withSuccessHandler(function (data) {
+            isRefreshing = false;
+            if (!data) { setStatus('No data returned.', true); return; }
+            var q = data.question || {};
+            document.getElementById('questionText').textContent =
+              stripTags(q.text || 'ChimeIn Results');
+            document.getElementById('responseCount').textContent =
+              (data.total_responses || 0) + ' response' + (data.total_responses !== 1 ? 's' : '');
+            document.getElementById('resultsContainer').innerHTML = renderResults(data);
+            setStatus('Updated ' + new Date().toLocaleTimeString(), false);
+          })
+          .withFailureHandler(function (err) {
+            isRefreshing = false;
+            setStatus('Error: ' + (err.message || String(err)), true);
+          })
+          .fetchResultsForDialog(chimeId, sessionId);
+      }
+
+      function stripTags(html) {
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || '';
+      }
+
+      function startPolling() {
+        stopPolling();
+        var ms = Number(document.getElementById('intervalSelect').value);
+        pollTimer = setInterval(refresh, ms);
+      }
+
+      function stopPolling() {
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+      }
+
+      document.getElementById('intervalSelect').addEventListener('change', function () {
+        startPolling();
+      });
+      document.getElementById('refreshNowBtn').addEventListener('click', refresh);
+
+      // Initial load + start polling
+      refresh();
+      startPolling();
+    </script>
+  </body>
+</html>

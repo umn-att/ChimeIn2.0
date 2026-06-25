@@ -201,6 +201,22 @@
     }
   });
 
+  document.getElementById('liveViewBtn').addEventListener('click', async function () {
+    var chimeId = document.getElementById('resultsChimeId').value;
+    var sessionId = document.getElementById('sessionId').value;
+    if (!chimeId || !sessionId) {
+      setMessage('Select both a Chime and an open Session first.', true);
+      return;
+    }
+    setMessage('Opening live results dialog...');
+    try {
+      await callServer('showLiveResultsDialog', [chimeId, sessionId]);
+      setMessage('');
+    } catch (e) {
+      setMessage(e, true);
+    }
+  });
+
   document.getElementById('insertQrBtn').addEventListener('click', async function () {
     setMessage('Inserting QR code...');
     try {

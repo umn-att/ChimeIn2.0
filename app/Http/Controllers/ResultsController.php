@@ -21,12 +21,12 @@ class ResultsController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // Validate session belongs to chime
-        if ($session->chime_id !== $chime->id) {
+        $question = $session->question()->with('folder')->first();
+
+        // Validate session belongs to chime via question → folder → chime
+        if (!$question || $question->folder->chime_id !== $chime->id) {
             return response()->json(['message' => 'Session not found'], 404);
         }
-
-        $question = $session->question;
 
         // Cache key: results-{session_id}
         $cacheKey = "results-session-{$session->id}";

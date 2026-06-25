@@ -30,9 +30,12 @@ class AuthViaTokenOrSession
                 $user = Auth::guard('sanctum')->user();
                 if ($user) {
                     Auth::setUser($user);
+                } else {
+                    // Token was provided but is not valid — reject with 401
+                    return response()->json(['message' => 'Invalid API token.'], 401);
                 }
             } catch (\Exception $e) {
-                // Token validation failed, let AuthIfNecessary handle it
+                return response()->json(['message' => 'Invalid API token.'], 401);
             }
         }
 

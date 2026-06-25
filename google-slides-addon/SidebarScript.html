@@ -158,7 +158,7 @@
   }
 
   document.getElementById('saveTokenBtn').addEventListener('click', async function () {
-    setMessage('Saving token...');
+    setMessage('Saving and validating...');
     try {
       var result = await callServer('saveConnectionSettings', [
         document.getElementById('baseUrl').value,
@@ -168,17 +168,7 @@
       var chimeCount = await loadChimes();
       setMessage('Connection saved. Chimes available: ' + chimeCount + '.');
     } catch (e) {
-      setMessage(e, true);
-    }
-  });
-
-  document.getElementById('validateTokenBtn').addEventListener('click', async function () {
-    setMessage('Validating token...');
-    try {
-      var result = await callServer('validateAuthToken');
-      var chimeCount = await loadChimes();
-      setMessage('Token valid. Chimes available: ' + (result.chimeCount || chimeCount));
-    } catch (e) {
+      document.getElementById('authStatus').textContent = 'Token validation failed.';
       setMessage(e, true);
     }
   });

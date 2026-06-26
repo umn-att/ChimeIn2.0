@@ -79,7 +79,8 @@ class ResultsController extends Controller
         switch ($questionType) {
             case Question::MULTIPLE_CHOICE_TYPE:
                 return $this->aggregateMultipleChoice($question, $responses);
-            case Question::SLIDER_TYPE:
+            case Question::SLIDER_TYPE:   // 'slider' (legacy)
+            case 'slider_response':         // current frontend value
                 return $this->aggregateSlider($responses);
             case Question::FREE_RESPONSE_TYPE:
                 return $this->aggregateFreeResponse($responses);

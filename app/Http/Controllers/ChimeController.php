@@ -407,15 +407,17 @@ class ChimeController extends Controller
         }
 
         usort($sessions, function ($a, $b) {
-            $a_time = strtotime($a->updated_at);
-            $b_time = strtotime($b->updated_at);
-
-            // If there's a tie, sort by question order
-            if ($a_time == $b_time) {
-                return $a->question->order - $b->question->order;
+            $folderOrderA = $a->question->folder->order ?? 0;
+            $folderOrderB = $b->question->folder->order ?? 0;
+            if ($folderOrderA !== $folderOrderB) {
+                return $folderOrderA - $folderOrderB;
             }
-            // sort by update time, most recent at the top
-            return $a_time < $b_time ? 1 : -1;
+            $questionOrderA = $a->question->order ?? 0;
+            $questionOrderB = $b->question->order ?? 0;
+            if ($questionOrderA !== $questionOrderB) {
+                return $questionOrderA - $questionOrderB;
+            }
+            return $a->id - $b->id;
         });
 
 

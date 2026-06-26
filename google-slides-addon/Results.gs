@@ -7,9 +7,23 @@ function showLiveResultsDialog(chimeId, sessionId) {
     throw new Error('Chime ID and Session ID are required.');
   }
 
+  // Fetch the ordered session list so the dialog can navigate prev/next
+  var sessionList = [];
+  try {
+    var payload = fetchOpenSessions(chimeId);
+    var sessions = payload && Array.isArray(payload.sessions) ? payload.sessions : [];
+    sessionList = sessions.map(function (s) {
+      var q = s.question || {};
+      return { id: String(s.id), label: q.text_preview || q.text || ('Session ' + s.id) };
+    });
+  } catch (e) {
+    sessionList = [{ id: String(sessionId), label: 'Current session' }];
+  }
+
   var template = HtmlService.createTemplateFromFile('ResultsDialog');
   template.chimeId = String(chimeId);
   template.sessionId = String(sessionId);
+  template.sessionList = sessionList;
 
   var html = template.evaluate()
     .setWidth(480)

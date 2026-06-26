@@ -9,65 +9,71 @@
       <h1>ChimeIn for Slides</h1>
       <p class="subtle">Signed in as: <span id="userEmail"></span></p>
 
-      <section class="card">
-        <h2>Connection</h2>
-        <label for="baseUrl">ChimeIn Base URL</label>
-        <input id="baseUrl" type="url" placeholder="https://chimein.cla.umn.edu" />
+      <section class="card" id="connectionCard">
+        <h2 class="card-toggle">Connection <span class="chevron">▾</span></h2>
+        <div class="card-body">
+          <label for="baseUrl">ChimeIn Base URL</label>
+          <input id="baseUrl" type="url" placeholder="https://chimein.cla.umn.edu" />
 
-        <label for="apiToken">API Token</label>
-        <textarea id="apiToken" rows="3" placeholder="Paste personal API token"></textarea>
+          <label for="apiToken">API Token</label>
+          <textarea id="apiToken" rows="3" placeholder="Paste personal API token"></textarea>
 
-        <div class="row">
-          <button id="saveTokenBtn">Save &amp; Validate</button>
-        </div>
-        <p id="authStatus" class="subtle"></p>
-      </section>
-
-      <section class="card">
-        <h2>Insert QR Code</h2>
-        <label for="qrChimeId">Chime</label>
-        <select id="qrChimeId"></select>
-
-        <label for="qrSize">QR Size</label>
-        <select id="qrSize">
-          <option value="200">Small (200)</option>
-          <option value="300" selected>Medium (300)</option>
-          <option value="400">Large (400)</option>
-          <option value="500">XL (500)</option>
-        </select>
-
-        <label for="qrLayout">Layout</label>
-        <select id="qrLayout">
-          <option value="left" selected>Left</option>
-          <option value="center">Center</option>
-          <option value="right">Right</option>
-        </select>
-
-        <label class="checkbox-row" for="qrIncludeJoinText">
-          <input id="qrIncludeJoinText" type="checkbox" checked />
-          Include join instructions below QR
-        </label>
-
-        <label class="checkbox-row" for="qrAllowFallback">
-          <input id="qrAllowFallback" type="checkbox" checked />
-          Use fallback QR provider if API image fails
-        </label>
-
-        <div class="row">
-          <button id="insertQrBtn">Insert QR</button>
-          <button id="refreshChimesBtn" class="secondary">Refresh Chimes</button>
+          <div class="row">
+            <button id="saveTokenBtn">Save &amp; Validate</button>
+          </div>
+          <p id="authStatus" class="subtle"></p>
         </div>
       </section>
 
-      <section class="card">
-        <h2>Results</h2>
-        <label for="resultsChimeId">Chime</label>
-        <select id="resultsChimeId"></select>
-        <label for="sessionId">Open Session</label>
-        <select id="sessionId"></select>
+      <section class="card" id="qrCard">
+        <h2 class="card-toggle">Insert QR Code <span class="chevron">▾</span></h2>
+        <div class="card-body">
+          <label for="qrChimeId">Chime</label>
+          <select id="qrChimeId"></select>
 
-        <div class="row">
-          <button id="showResultsBtn">Show Results</button>
+          <label for="qrSize">QR Size</label>
+          <select id="qrSize">
+            <option value="200">Small (200)</option>
+            <option value="300" selected>Medium (300)</option>
+            <option value="400">Large (400)</option>
+            <option value="500">XL (500)</option>
+          </select>
+
+          <label for="qrLayout">Layout</label>
+          <select id="qrLayout">
+            <option value="left" selected>Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+          </select>
+
+          <label class="checkbox-row" for="qrIncludeJoinText">
+            <input id="qrIncludeJoinText" type="checkbox" checked />
+            Include join instructions below QR
+          </label>
+
+          <label class="checkbox-row" for="qrAllowFallback">
+            <input id="qrAllowFallback" type="checkbox" checked />
+            Use fallback QR provider if API image fails
+          </label>
+
+          <div class="row">
+            <button id="insertQrBtn">Insert QR</button>
+            <button id="refreshChimesBtn" class="secondary">Refresh Chimes</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="resultsCard">
+        <h2 class="card-toggle">Results <span class="chevron">▾</span></h2>
+        <div class="card-body">
+          <label for="resultsChimeId">Chime</label>
+          <select id="resultsChimeId"></select>
+          <label for="sessionId">Open Session</label>
+          <select id="sessionId"></select>
+
+          <div class="row">
+            <button id="showResultsBtn">Show Results</button>
+          </div>
         </div>
       </section>
 

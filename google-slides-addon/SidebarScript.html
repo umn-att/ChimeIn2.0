@@ -80,6 +80,13 @@
   }
 
   async function init() {
+    // Wire up collapsible card toggles
+    document.querySelectorAll('.card-toggle').forEach(function (toggle) {
+      toggle.addEventListener('click', function () {
+        this.closest('.card').classList.toggle('collapsed');
+      });
+    });
+
     document.getElementById('userEmail').textContent = window.__USER_EMAIL__ || 'unknown';
     document.getElementById('baseUrl').value = window.__BASE_URL__ || '';
 
@@ -90,6 +97,7 @@
         : 'No token saved yet.';
 
       if (status.hasToken) {
+        document.getElementById('connectionCard').classList.add('collapsed');
         var chimeCount = await loadChimes();
         setMessage('Loaded ' + chimeCount + ' chimes.');
       } else {

@@ -44,11 +44,11 @@ class ResultsController extends Controller
         // Aggregate based on question type
         $results = $this->aggregateResults($question, $responses);
 
-        // Build response envelope
+        // Build response envelope — strip HTML from text for label use
         $response = [
             'question' => [
                 'id' => $question->id,
-                'text' => $question->text,
+                'text' => strip_tags($question->text),
                 'type' => $question->getQuestionType(),
                 'anonymous' => $question->anonymous,
                 'question_info' => $question->question_info,
@@ -89,6 +89,8 @@ class ResultsController extends Controller
                 return $this->aggregateHeatmap($responses);
             case Question::TEXT_HEATMAP_RESPONSE_TYPE:
                 return $this->aggregateTextHeatmap($responses);
+            case 'numeric_response':
+                return $this->aggregateNumericResponse($question, $responses);
             default:
                 return [];
         }
@@ -335,6 +337,54 @@ class ResultsController extends Controller
         }
 
         return $clusters;
+    }
+
+    /**
+     * Aggregate text heatmap responses
+     */
+    private function aggregateNumericResponse(Question $question, $responses)
+    {
+        $chartType = $question->question_info['question_responses']['chart_type'] ?? 'bar';
+
+        if ($responses->isEmpty()) {
+            return ['type' => 'numeric_response', 'chart_type' => $chartType, 'count' => 0, 'frequency' => []];
+        }
+
+        $xValues = $responses->map(fn($r) => $r->response_info['x'] ?? null)
+            ->filter(fn($v) => $v !== null)
+            ->map(fn($v) => floatval($v))
+            ->values()
+            ->toArray();
+
+        if (empty($xValues)) {
+            return ['type' => 'numeric_response', 'chart_type' => $chartType, 'count' => 0, 'frequency' => []];
+        }
+
+        sort($xValues);
+        $count = count($xValues);
+        $average = array_sum($xValues) / $count;
+
+        // Build frequency table per unique value
+        $freq = [];
+        foreach ($xValues as $v) {
+            $key = (string) $v;
+            $freq[$key] = ($freq[$key] ?? 0) + 1;
+        }
+        ksort($freq, SORT_NUMERIC);
+        $frequency = array_map(
+            fn($val, $cnt) => ['value' => (float) $val, 'count' => $cnt],
+            array_keys($freq), $freq
+        );
+
+        return [
+            'type'       => 'numeric_response',
+            'chart_type' => $chartType,
+            'count'      => $count,
+            'min'        => min($xValues),
+            'max'        => max($xValues),
+            'average'    => round($average, 2),
+            'frequency'  => $frequency,
+        ];
     }
 
     /**

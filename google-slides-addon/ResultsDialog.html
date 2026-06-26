@@ -224,6 +224,32 @@
         return html;
       }
 
+      function renderNumericResponse(data) {
+        var r = data.results || {};
+        if (!r.count) return '<p class="empty">No responses yet.</p>';
+
+        var html = '<div class="stat-row">';
+        html += '<div class="stat"><div class="stat-value">' + Number(r.average).toFixed(1) + '</div><div class="stat-label">Average</div></div>';
+        html += '<div class="stat"><div class="stat-value">' + r.min + '</div><div class="stat-label">Min</div></div>';
+        html += '<div class="stat"><div class="stat-value">' + r.max + '</div><div class="stat-label">Max</div></div>';
+        html += '</div>';
+
+        var freq = r.frequency || [];
+        if (freq.length) {
+          var maxCount = Math.max.apply(null, freq.map(function(f) { return f.count; }));
+          html += '<ul class="results-list">';
+          freq.forEach(function(f) {
+            var p = maxCount > 0 ? Math.round((f.count / maxCount) * 100) : 0;
+            html += '<li>' +
+              '<div class="bar-label"><span>' + f.value + '</span><span>' + f.count + '</span></div>' +
+              '<div class="bar-track"><div class="bar-fill" style="width:' + p + '%"></div></div>' +
+              '</li>';
+          });
+          html += '</ul>';
+        }
+        return html;
+      }
+
       function renderResults(data) {
         var type = data.question && data.question.type;
         switch (type) {
@@ -232,6 +258,7 @@
           case 'text_heatmap':   return renderFreeResponse(data);
           case 'slider':
           case 'numeric':        return renderSlider(data);
+          case 'numeric_response': return renderNumericResponse(data);
           default:               return renderFreeResponse(data);
         }
       }

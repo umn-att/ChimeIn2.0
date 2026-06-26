@@ -82,7 +82,6 @@
   function getSelectedResultsContext() {
     var chimeId = document.getElementById('resultsChimeId').value;
     var sessionId = document.getElementById('sessionId').value;
-    var displayMode = document.getElementById('resultsDisplayMode').value || 'table';
     var layout = document.getElementById('resultsLayout').value || 'right';
 
     if (!chimeId || !sessionId) {
@@ -93,7 +92,6 @@
       chimeId: chimeId,
       sessionId: sessionId,
       options: {
-        displayMode: displayMode,
         layout: layout
       }
     };

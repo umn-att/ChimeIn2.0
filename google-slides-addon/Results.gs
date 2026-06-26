@@ -33,7 +33,6 @@ function insertSessionResults(chimeId, sessionId, options) {
   }
 
   var opts = options || {};
-  var displayMode = opts.displayMode || 'table'; // table | text | both
   var layout = opts.layout || 'right'; // right | full
 
   var data = fetchSessionResults(chimeId, sessionId);
@@ -62,17 +61,14 @@ function insertSessionResults(chimeId, sessionId, options) {
   titleShape.getText().setText(title + '\nTotal Responses: ' + total + '  |  Updated: ' + updatedAt);
   currentTop += 60;
 
-  if (isMultipleChoiceResults(data) && (displayMode === 'table' || displayMode === 'both')) {
+  if (isMultipleChoiceResults(data)) {
     currentTop = renderMultipleChoiceTable(page, data, frame, currentTop);
-  }
-
-  if (displayMode === 'text' || displayMode === 'both' || !isMultipleChoiceResults(data)) {
+  } else {
     renderResultsSummaryText(page, data, frame, currentTop);
   }
 
   return {
     inserted: true,
-    displayMode: displayMode,
     layout: layout
   };
 }
@@ -164,6 +160,22 @@ function renderResultsSummaryText(page, data, frame, top) {
     lines.push('Clusters: ' + ((data.results.clusters && data.results.clusters.length) || 0));
   } else if (data.results && data.results.type === 'text_heatmap') {
     lines.push('Text Highlight Responses: ' + (data.results.total_responses || 0));
+  } else if (data.results && data.results.type === 'numeric_response') {
+    var nr = data.results;
+    lines.push('Numeric Response Summary');
+    if (nr.count > 0) {
+      lines.push('Responses: ' + nr.count);
+      lines.push('Average: ' + nr.average);
+      lines.push('Min: ' + nr.min + '  Max: ' + nr.max);
+      if (Array.isArray(nr.frequency) && nr.frequency.length) {
+        lines.push('');
+        nr.frequency.forEach(function (f) {
+          lines.push(f.value + ': ' + f.count);
+        });
+      }
+    } else {
+      lines.push('No responses yet.');
+    }
   } else {
     lines.push('Result type: ' + (data.results ? data.results.type : 'unknown'));
     lines.push('No specialized renderer available.');

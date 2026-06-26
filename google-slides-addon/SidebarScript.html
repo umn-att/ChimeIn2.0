@@ -1,6 +1,6 @@
 <script>
   var cachedChimes = [];
-  var liveRefreshTimerId = null;
+
 
   function setMessage(text, isError) {
     var message = document.getElementById('message');
@@ -79,59 +79,6 @@
     });
   }
 
-  function getSelectedResultsContext() {
-    var chimeId = document.getElementById('resultsChimeId').value;
-    var sessionId = document.getElementById('sessionId').value;
-    var layout = document.getElementById('resultsLayout').value || 'right';
-
-    if (!chimeId || !sessionId) {
-      throw new Error('Select both a Chime and an open Session.');
-    }
-
-    return {
-      chimeId: chimeId,
-      sessionId: sessionId,
-      options: {
-        layout: layout
-      }
-    };
-  }
-
-  async function refreshResultsOnce() {
-    var ctx = getSelectedResultsContext();
-    await callServer('insertSessionResults', [ctx.chimeId, ctx.sessionId, ctx.options]);
-  }
-
-  function setLiveStatus(text) {
-    document.getElementById('liveStatus').textContent = text;
-  }
-
-  function stopLiveRefresh() {
-    if (liveRefreshTimerId) {
-      clearInterval(liveRefreshTimerId);
-      liveRefreshTimerId = null;
-    }
-    setLiveStatus('Live refresh is off.');
-  }
-
-  async function startLiveRefresh() {
-    stopLiveRefresh();
-    var intervalSeconds = Number(document.getElementById('liveRefreshSeconds').value || 5);
-    var ms = Math.max(5, intervalSeconds) * 1000;
-
-    await refreshResultsOnce();
-    setLiveStatus('Live refresh active every ' + intervalSeconds + 's.');
-
-    liveRefreshTimerId = setInterval(async function () {
-      try {
-        await refreshResultsOnce();
-      } catch (e) {
-        stopLiveRefresh();
-        setMessage(e, true);
-      }
-    }, ms);
-  }
-
   async function init() {
     document.getElementById('userEmail').textContent = window.__USER_EMAIL__ || 'unknown';
     document.getElementById('baseUrl').value = window.__BASE_URL__ || '';
@@ -189,24 +136,14 @@
     }
   });
 
-  document.getElementById('refreshSessionsBtn').addEventListener('click', async function () {
-    setMessage('Refreshing sessions...');
-    try {
-      var count = await loadSessionsForSelectedChime();
-      setMessage('Open sessions updated (' + count + ').');
-    } catch (e) {
-      setMessage(e, true);
-    }
-  });
-
-  document.getElementById('liveViewBtn').addEventListener('click', async function () {
+  document.getElementById('showResultsBtn').addEventListener('click', async function () {
     var chimeId = document.getElementById('resultsChimeId').value;
     var sessionId = document.getElementById('sessionId').value;
     if (!chimeId || !sessionId) {
       setMessage('Select both a Chime and an open Session first.', true);
       return;
     }
-    setMessage('Opening live results dialog...');
+    setMessage('Loading results...');
     try {
       await callServer('showLiveResultsDialog', [chimeId, sessionId]);
       setMessage('');
@@ -238,46 +175,6 @@
       }
     } catch (e) {
       setMessage(e, true);
-    }
-  });
-
-  document.getElementById('insertResultsBtn').addEventListener('click', async function () {
-    setMessage('Inserting results...');
-    try {
-      await refreshResultsOnce();
-      setMessage('Results inserted.');
-    } catch (e) {
-      setMessage(e, true);
-    }
-  });
-
-  document.getElementById('startLiveBtn').addEventListener('click', async function () {
-    setMessage('Starting live refresh...');
-    try {
-      await startLiveRefresh();
-      setMessage('Live refresh started.');
-    } catch (e) {
-      setMessage(e, true);
-    }
-  });
-
-  document.getElementById('stopLiveBtn').addEventListener('click', function () {
-    stopLiveRefresh();
-    setMessage('Live refresh stopped.');
-  });
-
-  document.getElementById('liveRefreshEnabled').addEventListener('change', async function (event) {
-    if (event.target.checked) {
-      try {
-        await startLiveRefresh();
-        setMessage('Live refresh enabled.');
-      } catch (e) {
-        event.target.checked = false;
-        setMessage(e, true);
-      }
-    } else {
-      stopLiveRefresh();
-      setMessage('Live refresh disabled.');
     }
   });
 

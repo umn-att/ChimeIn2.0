@@ -163,6 +163,7 @@
       var chimeId = <?!= JSON.stringify(chimeId) ?>;
       var sessionId = <?!= JSON.stringify(sessionId) ?>;
       var sessionList = <?!= JSON.stringify(sessionList) ?>;
+      var baseUrl = <?!= JSON.stringify(baseUrl) ?>;
       var currentIndex = (function () {
         for (var i = 0; i < sessionList.length; i++) {
           if (sessionList[i].id === sessionId) return i;
@@ -280,12 +281,18 @@
       function renderImageResponse(data) {
         var images = (data.results && data.results.images) || [];
         if (!images.length) return '<p class="empty">No images submitted yet.</p>';
-        var html = '<ul class="results-list">';
+        var html = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">';
         images.forEach(function (img) {
-          html += '<li><div class="bar-label"><span>' + escapeHtml(img.user || 'Anonymous') + '</span>' +
-            '<span style="color:#6b7280;font-size:11px">' + escapeHtml(img.image_name || '') + '</span></div></li>';
+          var url = img.image_file ? (baseUrl + '/storage/' + img.image_file) : null;
+          html += '<div style="text-align:center;max-width:96px;">';
+          if (url) {
+            html += '<img src="' + url + '" style="width:88px;height:66px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;display:block;" />';
+          }
+          html += '<div style="font-size:10px;color:#6b7280;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:88px;" title="' +
+            escapeHtml(img.image_name || '') + '">' + escapeHtml(img.user || 'Anonymous') + '</div>';
+          html += '</div>';
         });
-        html += '</ul>';
+        html += '</div>';
         return html;
       }
 

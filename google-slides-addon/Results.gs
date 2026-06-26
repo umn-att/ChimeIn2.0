@@ -24,6 +24,7 @@ function showLiveResultsDialog(chimeId, sessionId) {
   template.chimeId = String(chimeId);
   template.sessionId = String(sessionId);
   template.sessionList = sessionList;
+  template.baseUrl = getBaseUrl();
 
   var html = template.evaluate()
     .setWidth(480)

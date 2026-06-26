@@ -245,9 +245,11 @@ class ResultsController extends Controller
         $images = [];
 
         $responses->each(function ($response) use (&$images) {
-            $imageName = $response->response_info['image_name'] ?? null;
-            if ($imageName) {
+            $imageFile = $response->response_info['image'] ?? null;
+            $imageName = $response->response_info['image_name'] ?? $imageFile;
+            if ($imageFile) {
                 $images[] = [
+                    'image_file' => $imageFile,
                     'image_name' => $imageName,
                     'user' => $response->user ? $response->user->name : 'Anonymous',
                     'submitted_at' => $response->created_at,

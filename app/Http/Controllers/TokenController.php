@@ -26,7 +26,7 @@ class TokenController extends Controller
             'name' => 'required|string|max:255'
         ]);
 
-        $token = Auth::user()->createToken($request->input('name'));
+        $token = Auth::user()->createToken($request->input('name'), ['slides-addon']);
 
         return response()->json([
             'token' => $token->plainTextToken,

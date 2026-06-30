@@ -2,17 +2,25 @@
 
 use App\User;
 
-it('authenticates with a valid bearer token', function () {
+it('authenticates with a valid bearer token on an allowed route', function () {
     $user = User::factory()->create();
-    $plainTextToken = $user->createToken('slides-token')->plainTextToken;
+    $plainTextToken = $user->createToken('slides-token', ['slides-addon'])->plainTextToken;
 
-    $response = $this
+    $this
         ->withHeader('Authorization', 'Bearer ' . $plainTextToken)
-        ->getJson('/api/tokens');
+        ->getJson('/api/chime')
+        ->assertOk();
+});
 
-    $response
-        ->assertOk()
-        ->assertJsonFragment(['name' => 'slides-token']);
+it('returns 403 when a token tries to access a route outside the slides-addon allowlist', function () {
+    $user = User::factory()->create();
+    $plainTextToken = $user->createToken('slides-token', ['slides-addon'])->plainTextToken;
+
+    $this
+        ->withHeader('Authorization', 'Bearer ' . $plainTextToken)
+        ->getJson('/api/tokens')
+        ->assertStatus(403)
+        ->assertJson(['message' => 'API tokens are restricted to read-only Google Slides integration endpoints.']);
 });
 
 it('returns 401 for an invalid bearer token', function () {

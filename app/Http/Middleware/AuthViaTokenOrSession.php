@@ -37,8 +37,36 @@ class AuthViaTokenOrSession
             } catch (\Exception $e) {
                 return response()->json(['message' => 'Invalid API token.'], 401);
             }
+
+            // Restrict token-authenticated requests to the slides-addon allowlist.
+            // All other routes (create/modify chimes, questions, responses, etc.)
+            // must be accessed via session auth only.
+            if (!$this->isAllowedForToken($request)) {
+                return response()->json([
+                    'message' => 'API tokens are restricted to read-only Google Slides integration endpoints.',
+                ], 403);
+            }
         }
 
         return $next($request);
+    }
+
+    /**
+     * Returns true if the request matches the allowlist of routes
+     * that token-authenticated clients (i.e. the Slides add-on) may access.
+     */
+    private function isAllowedForToken(Request $request): bool
+    {
+        if (!$request->isMethod('GET')) {
+            return false;
+        }
+
+        return $request->is(
+            'api/users/self',
+            'api/chime',
+            'api/chime/*/openQuestions',
+            'api/chime/*/session/*/results',
+            'api/chime/*/qrcode'
+        );
     }
 }

@@ -41,6 +41,13 @@ class AuthViaTokenOrSession
             // Restrict token-authenticated requests to the slides-addon allowlist.
             // All other routes (create/modify chimes, questions, responses, etc.)
             // must be accessed via session auth only.
+            //
+            // Allowed endpoints:
+            //   - api/users/self (get current user)
+            //   - api/chime (list chimes)
+            //   - api/chime/* (get specific chime, openQuestions, etc.)
+            //   - api/chime/*/session/*/results (get session results)
+            //   - api/chime/*/qrcode (generate QR code)
             if (!$this->isAllowedForToken($request)) {
                 return response()->json([
                     'message' => 'API tokens are restricted to read-only Google Slides integration endpoints.',
@@ -64,6 +71,7 @@ class AuthViaTokenOrSession
         return $request->is(
             'api/users/self',
             'api/chime',
+            'api/chime/*',
             'api/chime/*/openQuestions',
             'api/chime/*/session/*/results',
             'api/chime/*/qrcode'

@@ -51,3 +51,29 @@ it('falls back to standard session authentication when no bearer token exists', 
         ->getJson('/api/tokens')
         ->assertOk();
 });
+
+it('allows token-authenticated requests to fetch a specific chime', function () {
+    $user = User::factory()->create();
+    $chime = \App\Chime::factory()->withPresenter($user)->create();
+    $plainTextToken = $user->createToken('slides-token', ['slides-addon'])->plainTextToken;
+
+    $response = $this
+        ->withHeader('Authorization', 'Bearer ' . $plainTextToken)
+        ->getJson("/api/chime/{$chime->id}");
+
+    $response->assertOk();
+    expect($response->json('id'))->toBe($chime->id);
+});
+
+it('allows token-authenticated requests to fetch QR codes', function () {
+    $user = User::factory()->create();
+    $chime = \App\Chime::factory()->withPresenter($user)->create();
+    $plainTextToken = $user->createToken('slides-token', ['slides-addon'])->plainTextToken;
+
+    $response = $this
+        ->withHeader('Authorization', 'Bearer ' . $plainTextToken)
+        ->get("/api/chime/{$chime->id}/qrcode?format=svg&size=300");
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Type'))->toContain('image/svg+xml');
+});
